@@ -1,0 +1,8 @@
+test
+old
+/models/*
+/image_recognition/*
+/data/*
+catboost_info
+.ipynb_checkpoints
+__pycache__

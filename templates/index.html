@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark and Darker Price Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>const dataDict = {{ data | tojson }};</script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <h2>Dark and Darker Price Prediction</h2>
+
+    <form id="prediction-form">
+        <label for="model-selection">Select a model:</label>
+        <select id="model-selection" name="model-selection">
+            {% for model in models %}
+            <option value="{{ model|escape }}">{{ model }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <h2>Upload image or fill form</h2>
+
+        <div id="image-upload-box">
+            Drag & Drop an image here or click to select.
+        </div>
+        
+        <input type="file" id="image-upload" name="image" accept="image/*" style="display: none;" />
+        
+        <button type="button" id="upload-btn">Upload and Fill</button>
+        
+        <div id="image-preview-container" style="margin-top: 20px;">
+            <img id="image-preview" style="max-width: 300px; display: none;" />
+        </div>
+        
+        <div id="result-container" style="margin-top: 20px;"></div>
+        
+        
+        <h2>Form</h2>
+        <label for="name-selection">Select an item name:</label>
+        <select id="name-selection" name="name-selection">
+            {% for name in names %}
+                <option value="{{ name|escape }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label for="rarity-selection">Select a rarity:</label>
+        <select id="rarity-selection" name="rarity-selection">
+            {% for rarity in raritys %}
+                <option value="{{ rarity|escape }}">{{ rarity }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <h2>Base Stats</h2>
+        <div id="pp-container">No item selected.</div>
+        <br><br>
+
+        <h2>Enchantments</h2>
+        <div id="sp-container">No rarity selected.</div>
+        <br><br>
+
+        <button type="submit">Submit</button>
+        <br><br>
+
+        <h2>Price</h2>
+        <div id="price-container"></div>
+        <br><br>
+    </form>
+</body>
+</html>
