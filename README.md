@@ -161,7 +161,7 @@ Contains all the necessary Python dependencies required to run the project.
 - Special thanks to **Kokkor** on Discord for their help with this project.
 
 ## Additional Section
-For more details on this project and my motives, visit my website: iansolutions.xyz.
+For more details on this project and my motives, visit my website: [https://iansolutions.xyz](https://iansolutions.xyz).
 
 ## License
 This project is open-source, and you are free to modify, distribute, and use it as you wish.
