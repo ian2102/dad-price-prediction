@@ -2,7 +2,7 @@
 
 ## Project Overview
 Dark and Darker Price Prediction is a project designed to predict prices for in-game items in the game **Dark and Darker**. The main features include:
-1. **Capturing Process**: Captures,parses,saves network data from the game.
+1. **Capturing Process**: Captures, parses, saves network data from the game.
 2. **Machine Learning**: Trains models for price prediction and image recognition.
 3. **Web GUI**: Allows users to interact with the models, including built-in image recognition.
 
