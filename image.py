@@ -4,10 +4,13 @@ from PIL import Image
 import pytesseract
 import io
 import re
+from datetime import datetime
+import os
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+base_image_path = "data/images/base_image_1920x1080.png"
 
-def remove_identical_parts(base_image_path, new_image_obj, threshold_value=10):
+def remove_identical_parts(new_image_obj, threshold_value=10):
     base_image_obj = Image.open(base_image_path)
 
     base_image = np.array(base_image_obj)
@@ -46,3 +49,10 @@ if __name__ == "__main__":
     line = line.replace("\\n", " ")
     cleaned_line = re.sub(r"[^a-zA-Z0-9 .]", "", line)
     print(cleaned_line)
+
+def save_image(image, img_dir):
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    data_file_name = f"{timestamp}.png"
+    file_path = os.path.join(img_dir, data_file_name)
+    image.save(file_path)
+    return file_path

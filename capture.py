@@ -24,7 +24,6 @@ class MarketCapture:
         self.current_date = datetime.now().strftime("%Y-%m-%d")
         self.data_file_name = os.path.join(self.data_dir, f"{self.current_date}.csv")
         self.image_text_file = os.path.join(self.data_dir, f"{self.current_date}.txt")
-        self.base_image_path = os.path.join(self.image_dir, "base_image_1920x1080.png")
         self.count = 0
         self.errors = 0
         self.interface = interface
@@ -32,6 +31,7 @@ class MarketCapture:
         self.last_refresh = datetime.now()
         self.seconds_before_force_refresh = 10
         keyboard.add_hotkey('f7', self.stop_running)
+        screenshot_section()
     
     def capture(self):
         local_ip = self.get_local_ip()
@@ -142,7 +142,7 @@ class MarketCapture:
             if self.capture_image:
                 move_to_index(index)
                 screenshot = screenshot_section()
-                result = image.remove_identical_parts(self.base_image_path, screenshot)
+                result = image.remove_identical_parts(screenshot)
                 text = image.image_to_text(result)
                 while "\n" in text:
                     text = text.replace("\n", " ")
@@ -181,7 +181,7 @@ class MarketCapture:
     def screenshot_save(self):
         file_exists = os.path.isfile(self.image_text_file)
         screenshot = screenshot_section()
-        result = image.remove_identical_parts(self.base_image_path, screenshot)
+        result = image.remove_identical_parts(screenshot)
         text = image.image_to_text(result)
         text = text.replace("\n", " ")
         with open(self.image_text_file, "a") as file:
@@ -204,13 +204,6 @@ class MarketCapture:
                     if addr.family == socket.AF_INET:
                         return addr.address
         return None
-
-    def save_image(self, image):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        data_file_name = f"{timestamp}.png"
-        file_path = os.path.join(self.image_dir, data_file_name)
-        image.save(file_path)
-        return file_path
 
     def run(self):
         start_time = datetime.now().strftime("%H:%M:%S")

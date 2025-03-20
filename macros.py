@@ -14,6 +14,7 @@ def refresh():
 def screenshot_section():
     image_range = (871, 0, 1276 - 871, 1080)
     screenshot = pyautogui.screenshot(region=image_range)
+    #screenshot.save("data/images/base_image_1920x1080.png") # uncomment to create base image
     return screenshot
 
 def move_to_index(index):
