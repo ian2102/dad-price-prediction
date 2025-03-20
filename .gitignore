@@ -6,3 +6,4 @@ old
 catboost_info
 .ipynb_checkpoints
 __pycache__
+venv
