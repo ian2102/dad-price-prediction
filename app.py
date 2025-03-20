@@ -24,7 +24,7 @@ for file_name in models:
     model = joblib.load(os.path.join(model_directory, file_name))
     name_to_models[file_name] = model
 
-image_model = joblib.load('image_recognition/image_25K_2025-03-16_RandomForestRegressor.joblib')
+image_model = joblib.load('image_recognition/multi_output_25K_2025-03-17_MLPRegressor.joblib')
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 

@@ -1,6 +1,4 @@
 old
-/models/*
-/image_recognition/*
 /data/old/*
 catboost_info
 .ipynb_checkpoints
