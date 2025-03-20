@@ -22,6 +22,8 @@ class MarketCapture:
         self.data_dir = os.path.join("data")
         self.image_dir = os.path.join(self.data_dir, "images")
         self.current_date = datetime.now().strftime("%Y-%m-%d")
+        self.model_dir = os.path.join("models")
+        self.image_model_dir = os.path.join("image_recognition")
         self.data_file_name = os.path.join(self.data_dir, f"{self.current_date}.csv")
         self.image_text_file = os.path.join(self.data_dir, f"{self.current_date}.txt")
         self.count = 0
@@ -31,7 +33,13 @@ class MarketCapture:
         self.last_refresh = datetime.now()
         self.seconds_before_force_refresh = 10
         keyboard.add_hotkey('f7', self.stop_running)
-        screenshot_section()
+        self.create_dirs()
+    
+    def create_dirs(self):
+        os.makedirs(self.data_dir, exist_ok=True)
+        os.makedirs(self.image_dir, exist_ok=True)
+        os.makedirs(self.model_dir, exist_ok=True)
+        os.makedirs(self.image_model_dir, exist_ok=True)
     
     def capture(self):
         local_ip = self.get_local_ip()
