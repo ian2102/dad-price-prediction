@@ -11,15 +11,3 @@ def refresh():
 
     pyautogui.click()
 
-def screenshot_section():
-    image_range = (871, 0, 1276 - 871, 1080)
-    screenshot = pyautogui.screenshot(region=image_range)
-    #screenshot.save("data/images/base_image_1920x1080.png") # uncomment to create base image
-    return screenshot
-
-def move_to_index(index):
-    start_pos = (878, 352)
-    y_jump = 65
-    pos = (start_pos[0], start_pos[1] + (y_jump * index))
-    pyautogui.moveTo(pos[0], pos[1], duration=0.1)
-

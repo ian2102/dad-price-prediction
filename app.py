@@ -6,12 +6,14 @@ import os
 import image
 from mimetypes import guess_type
 import math
+import parse
+
 
 app = Flask(__name__)
 
 data = {
     "rarity_to_property_count": scheme.rarity_to_property_count,
-    "items_to_pp": scheme.items_to_pp,
+    "items_to_pp": scheme.name_to_pps,
     "pp": scheme.pp,
     "sp": scheme.sp
 }
@@ -23,8 +25,6 @@ name_to_models = {}
 for file_name in models:
     model = joblib.load(os.path.join(model_directory, file_name))
     name_to_models[file_name] = model
-
-image_model = joblib.load('image_recognition/multi_output_25K_2025-03-17_MLPRegressor.joblib')
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -55,74 +55,48 @@ def upload():
     image_obj = image.file_to_image(file)
 
     text = image.image_to_text(image_obj)
-    text = text.replace("\n", "\\n")
+    item, text = parse.parse_text(text)
+    
+    # item needs to be flat
+    for name, value in item["pp"]:
+        item[name] = value
 
-    predictions = image_model.predict([text])
-    prediction_dict = dict(zip(scheme.output_columns, predictions[0]))
-    print(prediction_dict)
+    for name, value in item["sp"]:
+        item[name] = value
 
-    rarity = "Rare"
-    name = "AdventurerBoots"
-    rarity_value = 0
-    name_value = 0
-    for key, value in prediction_dict.items():
-        if key.startswith("rarity_"):
-            if prediction_dict[key] > rarity_value:
-                rarity_value = prediction_dict[key]
-                rarity = key.replace("rarity_", "")
-        elif key.startswith("name_"):
-            if prediction_dict[key] > name_value:
-                name_value = prediction_dict[key]
-                name = key.replace("name_", "")
+    del item["pp"]
+    del item["sp"]
 
-    result = {
-        "name": name,
-        "rarity": rarity,
-    }
-
-    pp = scheme.items_to_pp[name]
-    for p in pp:
-        result[p] = prediction_dict[p]
-
-    highest_sp = sorted(
-        ((key, value) for key, value in prediction_dict.items() if key.startswith('s')),
-        key=lambda item: item[1], reverse=True
-    )
-
-    property_count = scheme.rarity_to_property_count[rarity]
-
-    top_n_sp_values = highest_sp[:property_count]
-    for p, value in top_n_sp_values:
-        result[p] = value
-
-    print(result)
-    return jsonify(result)
+    print(item)
+    return jsonify(item)
 
 @app.route("/submit", methods=["POST"])
 def submit():
     print(request.form)
-    name = scheme.name_ids[request.form.get("name-selection")]
-    rarity = scheme.rarity_to_property_count[request.form.get("rarity-selection")]
+    name = request.form.get("name-selection")
+    rarity = request.form.get("rarity-selection")
 
     item = scheme.get_empty_item()
     
-    item = {
-        f"name_{name}": 1,
-        f"rarity_{rarity}": 1,
-    }
+    item[f"name_{name}"] = 1
+    item[f"rarity_{rarity}"] = 1
 
     for key, value in request.form.items():
         if key in scheme.property_types:
             property_value = float(value)
             item[key] = property_value
-
+    
     df = pd.DataFrame([item])
 
     model = name_to_models[request.form.get("model-selection")]
 
+    # Ensure the dataframe has the same columns as the model was trained on
+    model_columns = model.feature_names_in_
+    df = pd.DataFrame([item], columns=model_columns)
+
     predictions = model.predict(df)
 
-    result = math.exp(int(predictions[0]))
+    result = int(predictions[0])
     price = str(result) + "g"
 
     return jsonify(price)

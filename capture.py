@@ -10,7 +10,6 @@ import traceback
 import MarketPlace_pb2 as MarketPlace_pb2
 from macros import *
 import scheme
-import image
 
 class MarketCapture:
     MARKET_PROTO = 3512
@@ -18,14 +17,10 @@ class MarketCapture:
 
     def __init__(self, interface='Ethernet', port_range=(20200, 20300)):
         self.running = True
-        self.capture_image = True
         self.data_dir = os.path.join("data")
-        self.image_dir = os.path.join(self.data_dir, "images")
         self.current_date = datetime.now().strftime("%Y-%m-%d")
         self.model_dir = os.path.join("models")
-        self.image_model_dir = os.path.join("image_recognition")
         self.data_file_name = os.path.join(self.data_dir, f"{self.current_date}.csv")
-        self.image_text_file = os.path.join(self.data_dir, f"{self.current_date}.txt")
         self.count = 0
         self.errors = 0
         self.interface = interface
@@ -33,13 +28,8 @@ class MarketCapture:
         self.last_refresh = datetime.now()
         self.seconds_before_force_refresh = 10
         keyboard.add_hotkey('f7', self.stop_running)
-        self.create_dirs()
-    
-    def create_dirs(self):
         os.makedirs(self.data_dir, exist_ok=True)
-        os.makedirs(self.image_dir, exist_ok=True)
         os.makedirs(self.model_dir, exist_ok=True)
-        os.makedirs(self.image_model_dir, exist_ok=True)
     
     def capture(self):
         local_ip = self.get_local_ip()
@@ -52,7 +42,6 @@ class MarketCapture:
             display_filter=f'ip.dst == {local_ip} and tcp.srcport >= {self.port_range[0]} and tcp.srcport <= {self.port_range[1]}'
         )
 
-
         try:
             self.process_packets(capture)
         except KeyboardInterrupt:
@@ -64,6 +53,7 @@ class MarketCapture:
         except Exception as e:
             print(f"An unexpected error occurred while capturing: {e}")
             self.errors += 1
+            traceback.print_exc()
 
     def process_packets(self, capture):
         packet_data = b""
@@ -117,7 +107,7 @@ class MarketCapture:
         self.refresh_hook()
     
     def save(self, info):
-        for index, item_info in enumerate(info.itemInfos):
+        for item_info in info.itemInfos:
             parts = item_info.item.itemId.split("_")
             name = parts[-2]
             # TODO
@@ -147,16 +137,6 @@ class MarketCapture:
                 "price": item_info.price
             }
 
-            if self.capture_image:
-                move_to_index(index)
-                screenshot = screenshot_section()
-                result = image.remove_identical_parts(screenshot)
-                text = image.image_to_text(result)
-                while "\n" in text:
-                    text = text.replace("\n", " ")
-                text = text.replace('"', " ")
-                item["text"] = text
-
             design_str = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect"
 
             for property_type in scheme.property_types:
@@ -176,26 +156,20 @@ class MarketCapture:
         self.count += 1
         file_exists = os.path.isfile(self.data_file_name)
         with open(self.data_file_name, mode="a", newline="") as file:
-            if self.capture_image:
-                fieldnames = ["name", "rarity", "price"] + scheme.property_types  + ["text"]
-            else:
-                fieldnames = ["name", "rarity", "price"] + scheme.property_types
+            fieldnames = ["name", "rarity", "price"] + scheme.property_types
+            unexpected_fields = [key for key in item if key not in fieldnames]
+
+            # Check and print
+            if unexpected_fields:
+                print("Unexpected fields found:", unexpected_fields)
+                for key in unexpected_fields:
+                    del item[key]
+
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             if not file_exists:
                 writer.writeheader()
 
             writer.writerow(item)
-    
-    def screenshot_save(self):
-        file_exists = os.path.isfile(self.image_text_file)
-        screenshot = screenshot_section()
-        result = image.remove_identical_parts(screenshot)
-        text = image.image_to_text(result)
-        text = text.replace("\n", " ")
-        with open(self.image_text_file, "a") as file:
-            if not file_exists:
-                file.write("id,text\n")
-            file.write(f"{str(self.count)}.{text}\n")
 
     def refresh_hook(self):
         refresh()
@@ -217,8 +191,7 @@ class MarketCapture:
         start_time = datetime.now().strftime("%H:%M:%S")
         try:
             print("Capturing...")
-            while 1: # TODO
-                self.capture()
+            self.capture()
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
             traceback.print_exc()
